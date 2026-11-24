@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#111821">
+    <title>RayModeling — оптический редактор</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+    <main class="app">
+        <header class="top-bar">
+            <a class="brand" href="#" aria-label="RayModeling — рабочая область">
+                <span class="brand__mark" aria-hidden="true">R</span>
+                <span class="brand__text">
+                    <strong>RayModeling</strong>
+                    <small>Оптический редактор</small>
+                </span>
+            </a>
+
+            <div class="top-bar__actions" aria-label="Действия с проектом">
+                <button class="top-bar__btn" type="button" disabled title="Пока недоступно">Файл</button>
+                <span class="top-bar__divider" aria-hidden="true"></span>
+                <button class="top-bar__btn top-bar__btn--icon" type="button" disabled title="Отменить — скоро">
+                    <span aria-hidden="true">↶</span> Отменить
+                </button>
+                <button class="top-bar__btn top-bar__btn--icon" type="button" disabled title="Повторить — скоро">
+                    <span aria-hidden="true">↷</span> Повторить
+                </button>
+                <button class="top-bar__btn top-bar__btn--accent" type="button" disabled title="Пресеты — скоро">Пресеты</button>
+            </div>
+        </header>
+
+        <section class="editor" aria-label="Редактор оптической схемы">
+            <aside class="editor__toolbar" id="toolbar" aria-label="Инструменты">
+                <div class="toolbar__caption">СОЗДАТЬ</div>
+                <button class="tool-btn editor__tool-btn" type="button" data-tool="source" aria-label="Источник света" title="Источник света">
+                    <span class="tool-btn__icon" aria-hidden="true">✳</span>
+                    <span class="tool-btn__label">Источник</span>
+                </button>
+                <button class="tool-btn editor__tool-btn" type="button" data-tool="shape" aria-label="Форма" title="Форма">
+                    <span class="tool-btn__icon tool-btn__icon--shape" aria-hidden="true">◇</span>
+                    <span class="tool-btn__label">Форма</span>
+                </button>
+                <button class="tool-btn editor__tool-btn" type="button" data-tool="lens" aria-label="Линза" title="Линза">
+                    <span class="tool-btn__icon" aria-hidden="true">◖</span>
+                    <span class="tool-btn__label">Линза</span>
+                </button>
+                <div class="toolbar__separator" aria-hidden="true"></div>
+                <button class="tool-btn editor__tool-btn" type="button" data-tool="select" aria-label="Выбор и перемещение" title="Выбор и перемещение">
+                    <span class="tool-btn__icon" aria-hidden="true">↖</span>
+                    <span class="tool-btn__label">Выбор</span>
+                </button>
+            </aside>
+
+            <section class="editor__workspace" id="scene" aria-label="Рабочая область">
+                <canvas id="work-canvas" aria-label="Ход лучей в оптической схеме"></canvas>
+            </section>
+
+            <aside class="editor__inspector" id="inspector" aria-label="Параметры объекта">
+                <div class="inspector__heading">
+                    <div>
+                        <span class="inspector__eyebrow">СВОЙСТВА СЦЕНЫ</span>
+                        <h2>Параметры</h2>
+                    </div>
+                    <span class="inspector__heading-mark" aria-hidden="true">⌘</span>
+                </div>
+                <div class="inspector__content" id="inspector-content"></div>
+            </aside>
+
+            <footer class="editor__status" id="status">
+                <span class="status__dot" aria-hidden="true"></span>
+                <span class="status__item">Сцена · 1280 × 960</span>
+                <span class="status__hint">Выберите объект, чтобы изменить его параметры</span>
+            </footer>
+        </section>
+    </main>
+
+    <script type="module" src="./main.js"></script>
+</body>
+</html>
