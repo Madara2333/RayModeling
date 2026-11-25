@@ -10,9 +10,6 @@ import Lens from "./optics/Lens.js";
 import EditorController from "./engine/EditorController.js";
 
 
-const toolbarElement = document.querySelector("#toolbar");
-const insperctorElement = document.querySelector("#insperctor");
-const statusElement = document.querySelector("#status");
 const canvas = document.querySelector("#work-canvas");
 const ctx = canvas.getContext("2d");
 
@@ -29,45 +26,92 @@ const editor = new EditorController(app, canvas);
 app.rendering.setEditor(editor);
 
 
-const material = new Material({reflectivity: 0.7, color: "#cfdfef"})
-
-const glass = new Material({
-    color: "rgba(120, 185, 214, 0.5)",
+const glass = () => new Material({
+    color: "rgba(120, 185, 214, 0.42)",
     n: 1.52,
-    dispersion: 0.005
+    dispersion: 0.008
 });
 
-const markerMaterial = new Material();
-markerMaterial.color = "#0f0f0f";
+const sceneSelect = document.querySelector("#scene-presets");
+const sceneStatus = document.querySelector("#scene-name");
 
+function createSource(mode = "monochromatic", wavelength = 550) {
+    const source = new LaserSource(new Vector2D(160, 480), new Vector2D(1, 0), 1);
+    source.divergence = 0;
+    source.setMode(mode);
+    source.setWavelength(wavelength);
+    return source;
+}
 
-const marker = new Shape(markerMaterial);
-marker.tag = "marker";
+function createLens(x, focusLength = 420, height = 500) {
+    return new Lens({
+        edgePosition1: new Vector2D(x, 480 + height / 2),
+        edgePosition2: new Vector2D(x, 480 - height / 2),
+        focusLength,
+        material: glass()
+    });
+}
 
-const markerPos = new Vector2D(1000, 480);
+function createPrism() {
+    const prism = new Shape(glass());
+    prism.addPoint(600, 250);
+    prism.addPoint(850, 480);
+    prism.addPoint(600, 710);
+    return prism;
+}
 
-marker.addPoint(markerPos.x, markerPos.y+7);
-marker.addPoint(markerPos.x+7, markerPos.y);
-marker.addPoint(markerPos.x, markerPos.y-7);
-marker.addPoint(markerPos.x-7, markerPos.y);
+const sceneFactories = {
+    focus: {
+        name: "Фокусировка линзой",
+        build() {
+            app.scene.addSource(createSource("monochromatic", 550));
+            app.scene.addObject(createLens(660, 420, 540));
+        }
+    },
+    spectrum: {
+        name: "Белый свет и призма",
+        build() {
+            app.scene.addSource(createSource("white"));
+            app.scene.addObject(createPrism());
+        }
+    },
+    wavelengths: {
+        name: "Цветные лучи",
+        build() {
+            for (const [y, wavelength] of [[350, 450], [480, 550], [610, 650]]) {
+                const source = createSource("monochromatic", wavelength);
+                source.position.y = y;
+                app.scene.addSource(source);
+            }
+            app.scene.addObject(createLens(850, 520, 600));
+        }
+    },
+    system: {
+        name: "Система из двух линз",
+        build() {
+            app.scene.addSource(createSource("monochromatic", 532));
+            app.scene.addObject(createLens(470, 350, 500));
+            app.scene.addObject(createLens(900, 500, 500));
+        }
+    }
+};
 
-const lens = new Lens({
-    edgePosition1: new Vector2D(300, 480+300),
-    edgePosition2: new Vector2D(300, 480-300),
-    focusLength: 700,
-    deepth: 0,
-    material: glass
-});
-// const lens = new Lens({position: new Vector2D(300, 480), direction: new Vector2D(1, 0), width: 600, deepth: 0, focusLegth: 700, type: null, material: glass})
+function loadScene(name) {
+    const preset = sceneFactories[name];
+    if (!preset) return;
 
-const laserSource = new LaserSource(new Vector2D(200, 680), new Vector2D(1, 0), 1);
-laserSource.divergence = 10;
-laserSource.rayCount = 20;
+    app.scene.objects.length = 0;
+    app.scene.sources.length = 0;
+    app.scene.clearRays();
+    editor.selectedObject = null;
+    editor.setTool("select");
+    editor.refreshInspector();
+    preset.build();
+    sceneStatus.textContent = preset.name;
+}
 
-app.scene.addObject(marker);
-app.scene.addObject(lens);
-
-app.scene.addSource(laserSource);
+sceneSelect.addEventListener("change", () => loadScene(sceneSelect.value));
+loadScene("focus");
 
 
 function mainLoop(timestamp) {
