@@ -325,6 +325,47 @@ button, input, select { font: inherit; }
 .inspector__point-title { color: #cad5de; font-size: 11px; font-weight: 700; }
 .inspector__property { color: #8fa0ad; }
 
+.lesson-content { display: none; }
+.app.learning-mode .editor { grid-template-columns: minmax(0, 1fr) 326px; }
+.app.learning-mode .editor__toolbar { display: none; }
+.app.learning-mode .editor__workspace { grid-column: 1; }
+.app.learning-mode .editor__workspace { background-image: none; }
+.app.learning-mode .editor__inspector { grid-column: 2; }
+.app.learning-mode .editor__status { grid-column: 1; }
+.app.learning-mode .editor__inspector .inspector__content { display: none; }
+.app.learning-mode .lesson-content { display: block; }
+.app.learning-mode .inspector__heading-mark { display: none; }
+.app.learning-mode .editor-only { display: none; }
+.app.learning-mode #toggle-grid { display: none; }
+.app.learning-mode #work-canvas { pointer-events: none; }
+.app.learning-mode .editor__inspector { padding: 24px 22px; }
+.lesson-card__number { margin: 22px 0 9px; color: var(--accent); font-size: 10px; font-weight: 800; letter-spacing: .16em; }
+.lesson-content h3 { margin: 0 0 13px; color: #f0f5f7; font-family: 'Manrope', sans-serif; font-size: 20px; line-height: 1.25; }
+.lesson-content > p { margin: 0; color: #b4c2cd; font-size: 13px; line-height: 1.65; }
+.lesson-card__section { display: flex; flex-direction: column; gap: 6px; margin-top: 19px; padding: 13px 14px; border: 1px solid #293d48; border-radius: 9px; background: #141f29; }
+.lesson-card__section strong { color: #94dcd2; font-size: 11px; }
+.lesson-card__section span { color: #bac7d0; font-size: 12px; line-height: 1.55; }
+.lesson-card__section--try { border-color: #3b3c36; background: #211f1a; }
+.lesson-card__section--try strong { color: #e4c47a; }
+
+@media (max-width: 900px) {
+    .app.learning-mode .editor { grid-template-columns: minmax(0, 1fr) 280px; }
+}
+
+@media (max-width: 680px) {
+    .app.learning-mode .editor { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto 28px; }
+    .app.learning-mode .editor__workspace { grid-column: 1; grid-row: 1; }
+    .app.learning-mode .editor__inspector { grid-column: 1; grid-row: 2; max-height: 34vh; }
+    .app.learning-mode .editor__status { grid-column: 1; grid-row: 3; }
+    .app.learning-mode .top-bar { gap: 8px; padding: 0 10px; }
+    .app.learning-mode .brand { gap: 7px; }
+    .app.learning-mode .brand__text strong { font-size: 12px; }
+    .app.learning-mode .top-bar__actions { gap: 5px; }
+    .app.learning-mode .top-bar__scene-label { display: none; }
+    .app.learning-mode .top-bar__scene-select { max-width: 155px; min-width: 105px; padding-right: 5px; font-size: 10px; }
+    .app.learning-mode #mode-toggle { min-width: 56px; padding: 0 7px; font-size: 10px; }
+}
+
 @media (max-width: 900px) {
     .editor { grid-template-columns: 72px minmax(0, 1fr) 280px; }
     .editor__toolbar { padding-right: 6px; padding-left: 6px; }

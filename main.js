@@ -4,6 +4,9 @@ import Material from "./optics/Material.js";
 import App from "./engine/App.js";
 import LaserSource from "./optics/LaserSource.js";
 import Lens from "./optics/Lens.js";
+import Mirror from "./optics/Mirror.js";
+import OpticalFilter from "./optics/OpticalFilter.js";
+import Sensor from "./optics/Sensor.js";
 import EditorController from "./engine/EditorController.js";
 import { saveScene, loadScene as restoreScene } from "./engine/SceneSerializer.js";
 
@@ -34,6 +37,7 @@ const sceneSelect = document.querySelector("#scene-presets");
 const sceneStatus = document.querySelector("#scene-name");
 const zoomLabel = document.querySelector("#zoom-label");
 const workspace = document.querySelector("#scene");
+const lessonContent = document.querySelector("#lesson-content");
 
 function createSource(mode = "monochromatic", wavelength = 550) {
     const source = new LaserSource(new Vector2D(160, 480), new Vector2D(1, 0), 1);
@@ -60,41 +64,87 @@ function createPrism() {
     return prism;
 }
 
+function createGlassBlock() {
+    const block = new Shape(glass());
+    block.addPoint(500, 300);
+    block.addPoint(760, 250);
+    block.addPoint(820, 650);
+    block.addPoint(560, 700);
+    return block;
+}
+
+function createDivergingSource(wavelength = 550, divergence = 1.2) {
+    const source = createSource("monochromatic", wavelength);
+    source.divergence = divergence;
+    source.rayCount = 13;
+    return source;
+}
+
 const sceneFactories = {
     focus: {
         name: "Фокусировка линзой",
+        intro: "Линза меняет направление лучей. Собирающая линза направляет их к одной точке — фокусу.",
+        observe: "Лучики после линзы сходятся рядом друг с другом.",
+        try: "В режиме редактора выбери линзу и измени её форму или фокусное расстояние.",
         build() {
-            app.scene.addSource(createSource("monochromatic", 550));
+            app.scene.addSource(createDivergingSource(550, 1.4));
             app.scene.addObject(createLens(660, 420, 540));
+        }
+    },
+    refraction: {
+        name: "Преломление в стекле",
+        intro: "При переходе из воздуха в стекло свет меняет скорость и направление. Это называется преломлением.",
+        observe: "Посмотри, как луч меняет направление на входе в стекло и при выходе из него.",
+        try: "Измени длину волны источника и сравни, насколько отклоняется луч.",
+        build() {
+            app.scene.addSource(createSource("monochromatic", 532));
+            app.scene.addObject(createGlassBlock());
+        }
+    },
+    reflection: {
+        name: "Отражение от зеркала",
+        intro: "Зеркало отражает свет. Угол, под которым луч падает на поверхность, равен углу отражения.",
+        observe: "Падающий пучок меняет направление после встречи с наклонным зеркалом.",
+        try: "В редакторе поверни зеркало и посмотри, куда направится отражённый свет.",
+        build() {
+            app.scene.addSource(createDivergingSource(532, 1.2));
+            app.scene.addObject(new Mirror(new Vector2D(650, 480), 45, 420));
         }
     },
     spectrum: {
         name: "Белый свет и призма",
+        intro: "Белый свет состоит из волн разной длины. В стекле они преломляются немного по-разному.",
+        observe: "После призмы белый луч распадается на цветные лучи — спектр.",
+        try: "Выбери сцену с фильтром, чтобы пропускать только часть спектра.",
         build() {
             app.scene.addSource(createSource("white"));
             app.scene.addObject(createPrism());
         }
     },
-    wavelengths: {
-        name: "Цветные лучи",
+    filter: {
+        name: "Как работает фильтр",
+        intro: "Цветной фильтр пропускает свет только в заданном диапазоне длин волн, а остальные цвета поглощает.",
+        observe: "Белый спектр сужается до диапазона, который пропускает фильтр.",
+        try: "В редакторе выбери фильтр и измени границы пропускания.",
         build() {
-            for (const [y, wavelength] of [[350, 450], [480, 550], [610, 650]]) {
-                const source = createSource("monochromatic", wavelength);
-                source.position.y = y;
-                app.scene.addSource(source);
-            }
-            app.scene.addObject(createLens(850, 520, 600));
-        }
-    },
-    system: {
-        name: "Система из двух линз",
-        build() {
-            app.scene.addSource(createSource("monochromatic", 532));
-            app.scene.addObject(createLens(470, 350, 500));
-            app.scene.addObject(createLens(900, 500, 500));
+            const source = createSource("white");
+            source.position.x = 130;
+            app.scene.addSource(source);
+            app.scene.addObject(new OpticalFilter(new Vector2D(560, 480), 90, 520, 500, 600));
+            app.scene.addObject(new Sensor(new Vector2D(980, 480), 90, 600));
         }
     }
 };
+
+function showLesson(preset) {
+    lessonContent.innerHTML = `
+        <div class="lesson-card__number">ОПЫТ</div>
+        <h3>${preset.name}</h3>
+        <p>${preset.intro}</p>
+        <div class="lesson-card__section"><strong>Наблюдай</strong><span>${preset.observe}</span></div>
+        <div class="lesson-card__section lesson-card__section--try"><strong>Попробуй</strong><span>${preset.try}</span></div>
+    `;
+}
 
 function loadScene(name) {
     const preset = sceneFactories[name];
@@ -107,11 +157,23 @@ function loadScene(name) {
     editor.setTool("select");
     editor.refreshInspector();
     preset.build();
+    app.rendering.lastSceneSignature = null;
     sceneStatus.textContent = preset.name;
+    showLesson(preset);
 }
 
 sceneSelect.addEventListener("change", () => loadScene(sceneSelect.value));
 loadScene("focus");
+
+const appRoot = document.querySelector(".app");
+const modeToggle = document.querySelector("#mode-toggle");
+modeToggle.addEventListener("click", () => {
+    const learning = appRoot.classList.toggle("learning-mode");
+    modeToggle.textContent = learning ? "Редактор" : "Обучение";
+    if (learning) editor.setTool("select");
+    document.querySelector("#panel-eyebrow").textContent = learning ? "ОПЫТ ПО ФИЗИКЕ" : "СВОЙСТВА СЦЕНЫ";
+    document.querySelector("#panel-title").textContent = learning ? "Что происходит?" : "Параметры";
+});
 
 document.querySelector("#save-scene").addEventListener("click", () => {
     const data = saveScene(app, sceneStatus.textContent || "Моя схема");
@@ -131,6 +193,7 @@ sceneFileInput.addEventListener("change", async () => {
     if (!file) return;
     try {
         const name = restoreScene(app, editor, JSON.parse(await file.text()));
+        app.rendering.lastSceneSignature = null;
         sceneSelect.querySelector('option[value="loaded-scene"]')?.remove();
         const customOption = new Option(name, "loaded-scene", true, true);
         sceneSelect.add(customOption);
