@@ -5,6 +5,7 @@ export default class Rendering {
     this.rayTracer = rayTracer;
     this.camera = camera;
     this.editor = null;
+    this.lastSceneSignature = null;
     }
 
     setEditor(editor) {
@@ -13,6 +14,16 @@ export default class Rendering {
 
     draw(scene) {
         const ctx = this.ctx;
+
+        // Tracing is the expensive part of rendering. Recompute it only when
+        // optical objects or sources have changed, rather than on every frame.
+        const signature = this.getSceneSignature(scene);
+        if (signature !== this.lastSceneSignature) {
+            for (const source of scene.sources) {
+                this.rayTracer.tracePath(source);
+            }
+            this.lastSceneSignature = signature;
+        }
 
         ctx.clearRect(
             0,
@@ -38,9 +49,6 @@ export default class Rendering {
         }
 
         for (const source of scene.sources) {
-            this.rayTracer.clear(source);
-            this.rayTracer.tracePath(source);
-
             for (const ray of source.rayPath.rays) {
                 ray.draw(ctx);
             }
@@ -59,5 +67,30 @@ export default class Rendering {
         if (this.editor) {
             this.editor.drawOverlay(ctx);
         }
+    }
+
+    getSceneSignature(scene) {
+        const objects = scene.objects.map((object) => {
+            const material = object.material
+                ? [object.material.n, object.material.dispersion, object.material.color]
+                : [];
+
+            if (object.edgePosition1 && object.edgePosition2) {
+                return ["lens", object.edgePosition1.x, object.edgePosition1.y,
+                    object.edgePosition2.x, object.edgePosition2.y,
+                    object.deepth, object.focusLength, ...material];
+            }
+
+            return ["shape", ...(object.points || []).flatMap((point) => [point.x, point.y]), ...material];
+        });
+
+        const sources = scene.sources.map((source) => [
+            source.position.x, source.position.y,
+            source.direction.x, source.direction.y,
+            source.power, source.divergence,
+            ...(source.spectrum || []).flatMap((component) => [component.wavelength, component.intensity])
+        ]);
+
+        return JSON.stringify([objects, sources]);
     }
 }
