@@ -48,6 +48,38 @@ export default class RayTracer {
             return;
         }
 
+        const hitObject = ray.intersection.object;
+        if (hitObject?.tag === "sensor") {
+            hitObject.receive(ray, ray.intersection);
+            return;
+        }
+
+        if (hitObject?.tag === "mirror") {
+            const reflected = this.getReflectedRay(
+                ray, ray.intersection.normal, 1, 1, null
+            );
+            reflected.branchType = "reflection";
+            reflected.parentRayId = ray.id;
+            this.traceRay(path, reflected, mediums);
+            return;
+        }
+
+        if (hitObject?.tag === "filter") {
+            if (ray.wavelength < hitObject.minWavelength || ray.wavelength > hitObject.maxWavelength) {
+                return;
+            }
+            const transmitted = new Ray(
+                { x: ray.intersection.point.x + ray.direction.x * 1e-6,
+                    y: ray.intersection.point.y + ray.direction.y * 1e-6 },
+                { ...ray.direction }, ray.power, ray.bounceCounter + 1,
+                ray.wavelength, ray.intensity
+            );
+            transmitted.branchType = "transmission";
+            transmitted.parentRayId = ray.id;
+            this.traceRay(path, transmitted, mediums);
+            return;
+        }
+
         const oldMediums = [...mediums];
 
         const { n1, n2 } = this.getAndUpdateMediums(
@@ -89,7 +121,7 @@ export default class RayTracer {
             Math.min(2, source.divergence)
         );
         
-        const rayCount = divergence === 0 ? 1 : 9;
+        const rayCount = divergence === 0 ? 1 : Math.max(3, Math.min(31, source.rayCount || 9));
 
         const offsets = Array.from(
             { length: rayCount },
@@ -257,9 +289,7 @@ export default class RayTracer {
         let closestIntersection = new Intersection();
 
         for (const object of this.scene.objects) {
-            if (object.tag === "marker") {
-                continue;
-            }
+            if (object.tag === "marker") continue;
 
             const intersection = object.getIntersection(ray);
 

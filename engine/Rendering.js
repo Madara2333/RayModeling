@@ -19,10 +19,14 @@ export default class Rendering {
         // optical objects or sources have changed, rather than on every frame.
         const signature = this.getSceneSignature(scene);
         if (signature !== this.lastSceneSignature) {
+            for (const object of scene.objects) {
+                if (object.tag === "sensor") object.measurements = [];
+            }
             for (const source of scene.sources) {
                 this.rayTracer.tracePath(source);
             }
             this.lastSceneSignature = signature;
+            this.editor?.refreshInspector();
         }
 
         ctx.clearRect(
@@ -81,13 +85,18 @@ export default class Rendering {
                     object.deepth, object.focusLength, ...material];
             }
 
+            if (object.isSegment) {
+                return [object.tag, object.position.x, object.position.y,
+                    object.angle, object.length, object.minWavelength, object.maxWavelength];
+            }
+
             return ["shape", ...(object.points || []).flatMap((point) => [point.x, point.y]), ...material];
         });
 
         const sources = scene.sources.map((source) => [
             source.position.x, source.position.y,
             source.direction.x, source.direction.y,
-            source.power, source.divergence,
+            source.power, source.divergence, source.rayCount || 9,
             ...(source.spectrum || []).flatMap((component) => [component.wavelength, component.intensity])
         ]);
 

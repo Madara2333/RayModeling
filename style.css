@@ -131,6 +131,7 @@ button, input, select { font: inherit; }
     flex-direction: column;
     align-items: stretch;
     gap: 5px;
+    overflow-y: auto;
     padding: 16px 9px 10px;
     border-right: 1px solid var(--line);
     background: var(--surface-1);
@@ -184,15 +185,44 @@ button, input, select { font: inherit; }
     overflow: hidden;
     background-color: #101820;
     background-image: radial-gradient(#283541 0.8px, transparent 0.8px);
-    background-size: 22px 22px;
+    background-size: var(--grid-size, 22px) var(--grid-size, 22px);
 }
+
+.editor__workspace.grid-hidden { background-image: none; }
+.workspace-controls {
+    position: absolute;
+    z-index: 2;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px;
+    border: 1px solid #31414d;
+    border-radius: 9px;
+    background: rgba(17, 24, 33, .94);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .22);
+}
+.workspace-controls button {
+    min-width: 30px;
+    height: 28px;
+    padding: 0 8px;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    background: transparent;
+    color: #c6d3dd;
+    font-size: 11px;
+    cursor: pointer;
+}
+.workspace-controls button:hover, .workspace-controls button[aria-pressed="true"] { border-color: #3c625f; background: #173432; color: #9de0d7; }
+.workspace-controls span { min-width: 42px; color: #b2c0ca; font-size: 11px; text-align: center; font-variant-numeric: tabular-nums; }
 
 #work-canvas {
     display: block;
     width: 100%;
     height: 100%;
     border: 0;
-    background: #0d141c;
+    background: transparent;
 }
 
 .editor__inspector {

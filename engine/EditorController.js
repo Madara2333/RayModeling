@@ -116,6 +116,15 @@ export default class EditorController {
             case "lens":
                 this.creation.createLens(worldPosition);
                 break;
+            case "mirror":
+                this.creation.createMirror(worldPosition);
+                break;
+            case "filter":
+                this.creation.createFilter(worldPosition);
+                break;
+            case "sensor":
+                this.creation.createSensor(worldPosition);
+                break;
         }
     }
 

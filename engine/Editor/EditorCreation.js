@@ -4,6 +4,9 @@ import Shape from "../../geometry/Shape.js";
 import Material from "../../optics/Material.js";
 import LaserSource from "../../optics/LaserSource.js";
 import Lens from "../../optics/Lens.js";
+import Mirror from "../../optics/Mirror.js";
+import OpticalFilter from "../../optics/OpticalFilter.js";
+import Sensor from "../../optics/Sensor.js";
 
 export default class EditorCreation {
     constructor(scene, camera) {
@@ -37,6 +40,16 @@ export default class EditorCreation {
         this.scene.addObject(lens);
         return lens;
     }
+
+    createSegment(ElementType, position, angle = 90, length = 180, ...options) {
+        const element = new ElementType(position.clone(), angle, length, ...options);
+        this.scene.addObject(element);
+        return element;
+    }
+
+    createMirror(position) { return this.createSegment(Mirror, position); }
+    createFilter(position) { return this.createSegment(OpticalFilter, position, 90, 180, 500, 600); }
+    createSensor(position) { return this.createSegment(Sensor, position); }
 
     handleShapePointerDown(screenPosition, worldPosition) {
         if (!this.isCreatingShape) {

@@ -3,6 +3,9 @@ import Shape from "../../geometry/Shape.js";
 import LaserSource from "../../optics/LaserSource.js";
 import Lens from "../../optics/Lens.js";
 import Ray from "../../geometry/Ray.js";
+import Mirror from "../../optics/Mirror.js";
+import OpticalFilter from "../../optics/OpticalFilter.js";
+import Sensor from "../../optics/Sensor.js";
 
 export default class EditorInspector {
     constructor(container) {
@@ -65,6 +68,12 @@ export default class EditorInspector {
                 `${this.object.divergence.toFixed(2)}°`;
         }
 
+        const measurements = this.container.querySelector("[data-sensor-measurements]");
+        if (measurements && this.object instanceof Sensor) {
+            const values = this.object.getMeasurements();
+            measurements.textContent = `${values.rays} лучей · суммарная мощность ${values.power.toFixed(3)}${values.minWavelength === null ? "" : ` · ${Math.round(values.minWavelength)}–${Math.round(values.maxWavelength)} нм`}`;
+        }
+
         const colorPreview = this.container.querySelector(
             ".inspector__color-preview"
         );
@@ -73,6 +82,10 @@ export default class EditorInspector {
             colorPreview.style.backgroundColor =
                 this.getWavelengthColor(this.object.wavelength);
         }
+        const samplesLabel = this.container.querySelector("[data-spectrum-samples]");
+        if (samplesLabel) samplesLabel.textContent = `Число компонент спектра: ${this.object.spectrumSamples}`;
+        const rayCountLabel = this.container.querySelector("[data-ray-count]");
+        if (rayCountLabel) rayCountLabel.textContent = `Число лучей в пучке: ${this.object.rayCount || 9}`;
     }
 
     getWavelengthColor(wavelength) {
@@ -91,7 +104,7 @@ export default class EditorInspector {
 
         if (property === "power") return object.power;
 
-        if (property === "angle") {
+        if (property === "angle" && object.direction) {
             return this.getDirectionAngle(object);
         }
 
@@ -115,6 +128,15 @@ export default class EditorInspector {
         if (property === "n") return object.material?.n;
         if (property === "dispersion") {
             return object.material?.dispersion;
+        }
+
+        if (object.isSegment) {
+            if (property === "position.x") return object.position.x;
+            if (property === "position.y") return object.position.y;
+            if (property === "angle") return object.angle;
+            if (property === "length") return object.length;
+            if (property === "minWavelength") return object.minWavelength;
+            if (property === "maxWavelength") return object.maxWavelength;
         }
 
         const pointMatch = property.match(
@@ -163,6 +185,11 @@ export default class EditorInspector {
             return;
         }
 
+        if (this.object.isSegment) {
+            this.renderSegment();
+            return;
+        }
+
         if (this.object instanceof Shape) {
             this.renderShape();
             return;
@@ -174,6 +201,31 @@ export default class EditorInspector {
                 Для этого типа объекта пока нет настроек.
             </div>
         `;
+    }
+
+    renderSegment() {
+        const object = this.object;
+        const isFilter = object instanceof OpticalFilter;
+        const isSensor = object instanceof Sensor;
+        const title = object instanceof Mirror ? "Зеркало" : isFilter ? "Спектральный фильтр" : "Датчик";
+        const details = isSensor
+            ? `<div class="inspector__property"><span>Измерения</span><span data-sensor-measurements>0 лучей · суммарная мощность 0.000</span></div>`
+            : isFilter
+                ? `<h3 class="inspector__title">Диапазон пропускания</h3>
+                    <label class="inspector__field"><span>От, нм</span><input type="number" min="380" max="780" data-property="minWavelength" value="${object.minWavelength}"></label>
+                    <label class="inspector__field"><span>До, нм</span><input type="number" min="380" max="780" data-property="maxWavelength" value="${object.maxWavelength}"></label>`
+                : `<p class="inspector__note">Отражает падающий луч.</p>`;
+        this.container.innerHTML = `
+            <section class="inspector__section">
+                <div class="inspector__object-heading"><span class="inspector__object-icon" aria-hidden="true">${isSensor ? "▤" : isFilter ? "▥" : "／"}</span><div><strong>${title}</strong><small>Оптический элемент</small></div></div>
+                ${details}
+                <h3 class="inspector__title">Положение и размер</h3>
+                <label class="inspector__field"><span>Координата X</span><input type="number" data-property="position.x" value="${object.position.x}" step="1"></label>
+                <label class="inspector__field"><span>Координата Y</span><input type="number" data-property="position.y" value="${object.position.y}" step="1"></label>
+                <label class="inspector__field"><span>Угол</span><input type="number" data-property="angle" value="${object.angle}" step="1"></label>
+                <label class="inspector__field"><span>Длина</span><input type="number" data-property="length" value="${object.length}" min="1" step="1"></label>
+            </section>`;
+        this.refresh();
     }
 
     
@@ -192,8 +244,11 @@ export default class EditorInspector {
                     <select data-property="mode" aria-label="Режим излучения">
                         <option value="white" ${source.mode === "white" ? "selected" : ""}>Белый свет</option>
                         <option value="monochromatic" ${source.mode === "monochromatic" ? "selected" : ""}>Монохроматический</option>
+                        <option value="rgb" ${source.mode === "rgb" ? "selected" : ""}>Красный, зелёный и синий</option>
                     </select>
                 </label>
+
+                ${source.mode === "white" ? `<label class="inspector__field inspector__field--stacked"><span data-spectrum-samples>Число компонент спектра: ${source.spectrumSamples}</span><input type="range" min="6" max="42" step="1" value="${source.spectrumSamples}" data-property="spectrumSamples"></label>` : ""}
 
                 <div class="inspector__field inspector__field--stacked" ${source.mode !== "monochromatic" ? "hidden" : ""}>
                     <label class="inspector__value-label" for="laser-wavelength">
@@ -224,6 +279,7 @@ export default class EditorInspector {
                     <input id="laser-divergence" type="range" min="0" max="2" step="0.05" value="${source.divergence}" data-property="divergence" aria-label="Расходимость луча">
                     <div class="inspector__range-scale"><span>0°</span><span>2°</span></div>
                 </div>
+                <label class="inspector__field inspector__field--stacked"><span data-ray-count>Число лучей в пучке: ${source.rayCount || 9}</span><input type="range" min="3" max="31" step="2" value="${source.rayCount || 9}" data-property="rayCount" aria-label="Число лучей в пучке"></label>
             </section>
 
             <section class="inspector__section">
@@ -497,10 +553,26 @@ export default class EditorInspector {
             } else if (property === "wavelength") {
                 object.setWavelength(value);
 
+            } else if (property === "spectrumSamples") {
+                object.setSpectrumSamples(value);
+
             } else if (property === "divergence") {
                 object.divergence = Math.max(0, Math.min(2, value));
+            } else if (property === "rayCount") {
+                object.rayCount = Math.max(3, Math.min(31, Math.round(value)));
             }
 
+            this.refresh();
+            return;
+        }
+
+        if (object.isSegment) {
+            if (property === "position.x") object.position.x = value;
+            else if (property === "position.y") object.position.y = value;
+            else if (property === "angle") object.angle = value;
+            else if (property === "length" && value > 0) object.length = value;
+            else if (property === "minWavelength") object.minWavelength = Math.max(380, Math.min(object.maxWavelength, value));
+            else if (property === "maxWavelength") object.maxWavelength = Math.min(780, Math.max(object.minWavelength, value));
             this.refresh();
             return;
         }

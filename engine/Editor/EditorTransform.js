@@ -243,6 +243,8 @@ export default class EditorTransform {
                 x: point.x,
                 y: point.y
             }));
+        } else if (object.isSegment) {
+            this.dragStartPosition = object.position.clone();
         } else {
             this.endDrag();
             return false;
@@ -288,6 +290,9 @@ export default class EditorTransform {
                 object.points[i].y =
                     this.dragStartPoints[i].y + dy;
             }
+        } else if (object.isSegment) {
+            object.position.x = this.dragStartPosition.x + dx;
+            object.position.y = this.dragStartPosition.y + dy;
         }
 
         this.editor.refreshInspector();

@@ -20,7 +20,9 @@
             </a>
 
             <div class="top-bar__actions" aria-label="Действия с проектом">
-                <button class="top-bar__btn" type="button" disabled title="Пока недоступно">Файл</button>
+                <button class="top-bar__btn" type="button" id="open-scene">Открыть</button>
+                <button class="top-bar__btn" type="button" id="save-scene">Сохранить</button>
+                <input type="file" id="scene-file" accept="application/json,.json" hidden>
                 <span class="top-bar__divider" aria-hidden="true"></span>
                 <button class="top-bar__btn top-bar__btn--icon" type="button" disabled title="Отменить — скоро">
                     <span aria-hidden="true">↶</span> Отменить
@@ -53,6 +55,18 @@
                     <span class="tool-btn__icon" aria-hidden="true">◖</span>
                     <span class="tool-btn__label">Линза</span>
                 </button>
+                <button class="tool-btn editor__tool-btn" type="button" data-tool="mirror" aria-label="Зеркало" title="Зеркало">
+                    <span class="tool-btn__icon" aria-hidden="true">／</span>
+                    <span class="tool-btn__label">Зеркало</span>
+                </button>
+                <button class="tool-btn editor__tool-btn" type="button" data-tool="filter" aria-label="Спектральный фильтр" title="Спектральный фильтр">
+                    <span class="tool-btn__icon" aria-hidden="true">▥</span>
+                    <span class="tool-btn__label">Фильтр</span>
+                </button>
+                <button class="tool-btn editor__tool-btn" type="button" data-tool="sensor" aria-label="Датчик света" title="Датчик света">
+                    <span class="tool-btn__icon" aria-hidden="true">▤</span>
+                    <span class="tool-btn__label">Датчик</span>
+                </button>
                 <div class="toolbar__separator" aria-hidden="true"></div>
                 <button class="tool-btn editor__tool-btn" type="button" data-tool="select" aria-label="Выбор и перемещение" title="Выбор и перемещение">
                     <span class="tool-btn__icon" aria-hidden="true">↖</span>
@@ -61,6 +75,13 @@
             </aside>
 
             <section class="editor__workspace" id="scene" aria-label="Рабочая область">
+                <div class="workspace-controls" aria-label="Вид схемы">
+                    <button type="button" id="zoom-out" aria-label="Уменьшить">−</button>
+                    <span id="zoom-label">100%</span>
+                    <button type="button" id="zoom-in" aria-label="Увеличить">+</button>
+                    <button type="button" id="fit-scene">Вписать</button>
+                    <button type="button" id="toggle-grid" aria-pressed="true">Сетка</button>
+                </div>
                 <canvas id="work-canvas" aria-label="Ход лучей в оптической схеме"></canvas>
             </section>
 

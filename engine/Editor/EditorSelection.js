@@ -27,6 +27,10 @@ export default class EditorSelection {
                 continue;
             }
 
+            if (object.isSegment && this._segmentContainsPoint(object, position)) {
+                return object;
+            }
+
             if (
                 object instanceof Shape &&
                 this._shapeContainsPoint(object, position)
@@ -36,6 +40,16 @@ export default class EditorSelection {
         }
 
         return null;
+    }
+
+    _segmentContainsPoint(segment, point) {
+        const [a, b] = segment.endpoints();
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const lengthSquared = dx * dx + dy * dy || 1;
+        const t = Math.max(0, Math.min(1,
+            ((point.x - a.x) * dx + (point.y - a.y) * dy) / lengthSquared));
+        return Math.hypot(point.x - (a.x + t * dx), point.y - (a.y + t * dy)) < 12;
     }
 
     _sourceContainsPoint(source, point) {

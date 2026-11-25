@@ -28,6 +28,21 @@ export default class EditorOverlay {
             this.drawShapeSelection(ctx, object);
         }
 
+        if (object.isSegment) {
+            const [a, b] = object.endpoints();
+            const start = this.camera.worldToScreen(a);
+            const end = this.camera.worldToScreen(b);
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(start.x, start.y);
+            ctx.lineTo(end.x, end.y);
+            ctx.strokeStyle = "#ffffff";
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 4]);
+            ctx.stroke();
+            ctx.restore();
+        }
+
         if (object instanceof LaserSource) {
             this.drawLaserSourceSelection(ctx, object);
             return;

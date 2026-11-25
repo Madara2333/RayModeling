@@ -10,7 +10,7 @@ export default class LaserSource {
 
         this.power = power;
 
-        // Режим: white или monochromatic
+        // Режим: white, monochromatic или rgb
         this.mode = "white";
 
         // Длина волны для монохроматического режима
@@ -19,7 +19,8 @@ export default class LaserSource {
         // Угол расходимости (пока только параметр)
         this.divergence = 0;
 
-        this.spectrum = this.createWhiteSpectrum(42);
+        this.spectrumSamples = 24;
+        this.spectrum = this.createWhiteSpectrum(this.spectrumSamples);
         this.rayPath = new Path();
     }
 
@@ -43,7 +44,7 @@ export default class LaserSource {
     }
 
     setMode(mode) {
-        if (mode !== "white" && mode !== "monochromatic") {
+        if (!["white", "monochromatic", "rgb"].includes(mode)) {
             return;
         }
 
@@ -62,9 +63,19 @@ export default class LaserSource {
         }
     }
 
+    setSpectrumSamples(count) {
+        this.spectrumSamples = Math.max(6, Math.min(42, Math.round(count)));
+        if (this.mode === "white") this.updateSpectrum();
+    }
+
     updateSpectrum() {
         if (this.mode === "white") {
-            this.spectrum = this.createWhiteSpectrum(42);
+            this.spectrum = this.createWhiteSpectrum(this.spectrumSamples);
+        } else if (this.mode === "rgb") {
+            this.spectrum = [450, 532, 650].map((wavelength) => ({
+                wavelength,
+                intensity: 1 / 3
+            }));
         } else {
             this.spectrum = [{
                 wavelength: this.wavelength,
