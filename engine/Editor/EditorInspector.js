@@ -13,6 +13,14 @@ export default class EditorInspector {
             "change",
             (event) => this.handleChange(event)
         );
+        this.container?.addEventListener("click", (event) => {
+            const preset = event.target.closest("[data-wavelength-preset]");
+            if (!preset || !(this.object instanceof LaserSource)) return;
+
+            this.object.setMode("monochromatic");
+            this.object.setWavelength(Number(preset.dataset.wavelengthPreset));
+            this.render();
+        });
     }
 
     setObject(object) {
@@ -195,8 +203,14 @@ export default class EditorInspector {
                         <input id="laser-wavelength" type="range" min="380" max="780" step="1" value="${source.wavelength}" data-property="wavelength" aria-label="Длина волны">
                         <span class="inspector__color-preview" style="background-color:${this.getWavelengthColor(source.wavelength)}" aria-hidden="true"></span>
                     </div>
+                    <div class="inspector__wavelength-presets" aria-label="Частые длины волн">
+                        <button type="button" data-wavelength-preset="450" title="Синий свет, 450 нм">450 нм</button>
+                        <button type="button" data-wavelength-preset="532" title="Зелёный свет, 532 нм">532 нм</button>
+                        <button type="button" data-wavelength-preset="650" title="Красный свет, 650 нм">650 нм</button>
+                    </div>
                     <div class="inspector__range-scale"><span>380 нм</span><span>780 нм</span></div>
                 </div>
+                ${source.mode === "white" ? '<p class="inspector__note">Белый свет состоит из набора длин волн 380–780 нм. Призма показывает их разложение.</p>' : ""}
             </section>
 
             <section class="inspector__section">
