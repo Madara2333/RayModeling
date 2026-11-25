@@ -23,7 +23,8 @@ export default class EditorController {
         this.creation = new EditorCreation(this.scene, this.camera);
         this.transform = new EditorTransform(this, this.camera, this.canvas);
         this.inspector = new EditorInspector(
-            document.querySelector("#inspector-content")
+            document.querySelector("#inspector-content"),
+            this.scene
         );
 
 

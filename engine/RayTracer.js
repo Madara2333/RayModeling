@@ -97,6 +97,18 @@ export default class RayTracer {
             n2
         );
 
+        const incidenceAngle = Math.asin(Math.min(1,
+            Math.abs(Vector2D.vec(ray.direction, normal)))) * 180 / Math.PI;
+        const refractedSine = Math.abs(Vector2D.vec(ray.direction, normal)) * n1 / n2;
+        ray.interaction = {
+            wavelength: ray.wavelength,
+            incidenceAngle,
+            refractionAngle: refractedRay === null ? null :
+                Math.asin(Math.min(1, refractedSine)) * 180 / Math.PI,
+            n1,
+            n2
+        };
+
         const reflectedRay = this.getReflectedRay(
             ray, normal, n1, n2, refractedRay
         );

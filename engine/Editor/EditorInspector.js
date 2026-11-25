@@ -8,8 +8,9 @@ import OpticalFilter from "../../optics/OpticalFilter.js";
 import Sensor from "../../optics/Sensor.js";
 
 export default class EditorInspector {
-    constructor(container) {
+    constructor(container, scene) {
         this.container = container;
+        this.scene = scene;
         this.object = null;
 
         this.container?.addEventListener(
@@ -72,6 +73,16 @@ export default class EditorInspector {
         if (measurements && this.object instanceof Sensor) {
             const values = this.object.getMeasurements();
             measurements.textContent = `${values.rays} лучей · суммарная мощность ${values.power.toFixed(3)}${values.minWavelength === null ? "" : ` · ${Math.round(values.minWavelength)}–${Math.round(values.maxWavelength)} нм`}`;
+        }
+
+        if (this.object instanceof Lens) {
+            const measurement = this.getLensMeasurement(this.object);
+            const incidence = this.container.querySelector('[data-lens-measurement="incidence"]');
+            const refraction = this.container.querySelector('[data-lens-measurement="refraction"]');
+            const count = this.container.querySelector('[data-lens-measurement="count"]');
+            if (incidence) incidence.textContent = measurement ? `${measurement.incidence.toFixed(2)}°` : "—";
+            if (refraction) refraction.textContent = measurement ? (measurement.refraction === null ? "полное отражение" : `${measurement.refraction.toFixed(2)}°`) : "—";
+            if (count) count.textContent = String(measurement?.rays || 0);
         }
 
         const colorPreview = this.container.querySelector(
@@ -160,6 +171,23 @@ export default class EditorInspector {
         );
 
         return radians * 180 / Math.PI;
+    }
+
+    getLensMeasurement(lens) {
+        const interactions = this.object && this.object === lens
+            ? this._rayPaths().filter(ray => ray.interaction && ray.intersection.object === lens)
+            : [];
+        if (!interactions.length) return null;
+        const incidence = interactions.reduce((sum, ray) => sum + ray.interaction.incidenceAngle, 0) / interactions.length;
+        const transmitted = interactions.filter(ray => ray.interaction.refractionAngle !== null);
+        const refraction = transmitted.length
+            ? transmitted.reduce((sum, ray) => sum + ray.interaction.refractionAngle, 0) / transmitted.length
+            : null;
+        return { incidence, refraction, rays: interactions.length };
+    }
+
+    _rayPaths() {
+        return (this.scene?.sources || []).flatMap(source => source.rayPath?.rays || []);
     }
 
     render() {
@@ -294,6 +322,7 @@ export default class EditorInspector {
     renderLens() {
         const lens = this.object;
         const material = lens.material;
+        const measurement = this.getLensMeasurement(lens);
 
         this.container.innerHTML = `
             <section class="inspector__section">
@@ -375,6 +404,10 @@ export default class EditorInspector {
                         step="1"
                     >
                 </label>
+
+                <div class="inspector__property"><span>Угол падения</span><span data-lens-measurement="incidence">${measurement ? `${measurement.incidence.toFixed(2)}°` : "—"}</span></div>
+                <div class="inspector__property"><span>Угол преломления</span><span data-lens-measurement="refraction">${measurement ? (measurement.refraction === null ? "полное отражение" : `${measurement.refraction.toFixed(2)}°`) : "—"}</span></div>
+                <div class="inspector__property"><span>Учтено лучей</span><span data-lens-measurement="count">${measurement?.rays || 0}</span></div>
 
                 <h3 class="inspector__title">
                     Материал
