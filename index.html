@@ -28,7 +28,13 @@
                 <button class="top-bar__btn top-bar__btn--icon" type="button" disabled title="Повторить — скоро">
                     <span aria-hidden="true">↷</span> Повторить
                 </button>
-                <button class="top-bar__btn top-bar__btn--accent" type="button" disabled title="Пресеты — скоро">Пресеты</button>
+                <label class="top-bar__scene-label" for="scene-presets">Сцена</label>
+                <select class="top-bar__scene-select" id="scene-presets" aria-label="Выбрать готовую сцену">
+                    <option value="focus">Фокусировка линзой</option>
+                    <option value="spectrum">Белый свет и призма</option>
+                    <option value="wavelengths">Цветные лучи</option>
+                    <option value="system">Система из двух линз</option>
+                </select>
             </div>
         </header>
 
@@ -71,7 +77,7 @@
 
             <footer class="editor__status" id="status">
                 <span class="status__dot" aria-hidden="true"></span>
-                <span class="status__item">Сцена · 1280 × 960</span>
+                <span class="status__item">Сцена · <span id="scene-name">Фокусировка линзой</span></span>
                 <span class="status__hint">Выберите объект, чтобы изменить его параметры</span>
             </footer>
         </section>
