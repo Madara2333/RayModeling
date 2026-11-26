@@ -5,7 +5,7 @@ import EditorOverlay from "./Editor/EditorOverlay.js";
 import EditorInput from "./Editor/EditorInput.js";
 import EditorCreation from "./Editor/EditorCreation.js";
 import EditorTransform from "./Editor/EditorTransform.js";
-import EditorInspector from "./Editor/EditorInspector.js?v=audit1126";
+import EditorInspector from "./Editor/EditorInspector.js?v=audit1126b";
 
 export default class EditorController {
     constructor(app, canvas) {
