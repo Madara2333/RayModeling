@@ -672,8 +672,7 @@ export default class EditorInspector {
             } else if (property === "color") {
                 object.material.color = value;
             } else if (property === "n" && value > 1) {
-                object.material.n = value;
-                object.updateGeometry();
+                object.setRefractiveIndex(value);
             } else if (property === "dispersion") {
                 object.material.dispersion = value;
             }

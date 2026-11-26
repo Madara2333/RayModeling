@@ -188,6 +188,17 @@ export default class Lens {
         this.updateGeometry();
     }
 
+    setRefractiveIndex(value) {
+        if (!Number.isFinite(value) || value <= 1) {
+            throw new Error("Lens refractive index must be greater than 1");
+        }
+
+        const currentRadius = this.radius;
+        this.material.n = value;
+        this.focusLength = currentRadius / (2 * (value - 1));
+        this.updateGeometry();
+    }
+
     checkIntersection(A, B, circle, ray, t) {
         if (t <= 0) {
             return new Intersection();

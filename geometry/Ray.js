@@ -87,9 +87,11 @@ export default class Ray {
         }
 
         const [r, g, b] = Ray.wavelengthToRGB(this.wavelength);
-        const alpha = Math.max(
-            0,
-            Math.min(1, this.power)
+        // Keep weak spectral components visible without changing their
+        // simulated power, which is still used by sensors and measurements.
+        const alpha = Math.min(
+            0.78,
+            Math.max(0.18, Math.sqrt(Math.max(0, this.power)) * 1.1)
         );
 
         ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
