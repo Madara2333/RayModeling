@@ -2,7 +2,7 @@
 import Shape from "../../geometry/Shape.js";
 import LaserSource from "../../optics/LaserSource.js";
 import Lens from "../../optics/Lens.js";
-import Ray from "../../geometry/Ray.js";
+import Ray from "../../geometry/Ray.js?v=audit1126";
 import Mirror from "../../optics/Mirror.js";
 import OpticalFilter from "../../optics/OpticalFilter.js";
 import Sensor from "../../optics/Sensor.js";
@@ -47,7 +47,8 @@ export default class EditorInspector {
             );
 
             if (value !== undefined) {
-                input.value = value;
+                if (input.type === "checkbox") input.checked = Boolean(value);
+                else input.value = value;
             }
         }
 
@@ -92,7 +93,7 @@ export default class EditorInspector {
             if (angle) angle.textContent = measurement ? (measurement.totalInternal ? "полное внутреннее отражение" : `${measurement.angle.toFixed(2)}°`) : "на пути нет стекла";
             if (count) count.textContent = measurement ? `${measurement.rays} пересечений` : "0 пересечений";
             const beamWidth = this.container.querySelector("[data-beam-width]");
-            if (beamWidth) beamWidth.textContent = `Ширина параллельного пучка: ${this.object.beamWidth || 0}`;
+            if (beamWidth) beamWidth.textContent = `Ширина пучка: ${this.object.beamWidth || 0}`;
         }
 
         const colorPreview = this.container.querySelector(
@@ -104,9 +105,9 @@ export default class EditorInspector {
                 this.getWavelengthColor(this.object.wavelength);
         }
         const samplesLabel = this.container.querySelector("[data-spectrum-samples]");
-        if (samplesLabel) samplesLabel.textContent = `Число компонент спектра: ${this.object.spectrumSamples}`;
+        if (samplesLabel) samplesLabel.textContent = `Цветов в спектре: ${this.object.spectrumSamples}`;
         const rayCountLabel = this.container.querySelector("[data-ray-count]");
-        if (rayCountLabel) rayCountLabel.textContent = `Число лучей в пучке: ${this.object.rayCount || 9}`;
+        if (rayCountLabel) rayCountLabel.textContent = `Лучей в пучке: ${this.object.rayCount || 9}`;
     }
 
     getWavelengthColor(wavelength) {
@@ -125,6 +126,9 @@ export default class EditorInspector {
 
         if (property === "power") return object.power;
         if (property === "beamWidth") return object.beamWidth;
+        if (property === "spectrumSamples") return object.spectrumSamples;
+        if (property === "rayCount") return object.rayCount || 9;
+        if (property === "showGlassReflections") return object.showGlassReflections;
 
         if (property === "angle" && object.direction) {
             return this.getDirectionAngle(object);
@@ -301,7 +305,7 @@ export default class EditorInspector {
                     </select>
                 </label>
 
-                ${source.mode === "white" ? `<label class="inspector__field inspector__field--stacked"><span data-spectrum-samples>Число компонент спектра: ${source.spectrumSamples}</span><input type="range" min="6" max="42" step="1" value="${source.spectrumSamples}" data-property="spectrumSamples"></label>` : ""}
+                ${source.mode === "white" ? `<details class="inspector__advanced"><summary>Точность расчёта спектра</summary><label class="inspector__field inspector__field--stacked"><span data-spectrum-samples>Цветов в спектре: ${source.spectrumSamples}</span><input type="range" min="6" max="42" step="1" value="${source.spectrumSamples}" data-property="spectrumSamples" aria-label="Число цветовых составляющих спектра"><small>Больше цветов — плавнее радуга, но расчёт медленнее.</small></label></details>` : ""}
 
                 <div class="inspector__field inspector__field--stacked" ${source.mode !== "monochromatic" ? "hidden" : ""}>
                     <label class="inspector__value-label" for="laser-wavelength">
@@ -319,7 +323,7 @@ export default class EditorInspector {
                     <div class="inspector__range-scale"><span>380 нм</span><span>780 нм</span></div>
                 </div>
                 ${source.mode === "white" ? '<p class="inspector__note">Белый свет состоит из набора длин волн 380–780 нм. Призма показывает их разложение.</p>' : ""}
-                ${source.mode === "rgb" ? '<p class="inspector__note">Рисует три отдельных луча — красный, зелёный и синий. Это режим сравнения цветов, а не сплошной спектр белого света.</p>' : ""}
+                ${source.mode === "rgb" ? '<p class="inspector__note">Показывает три отдельных луча: красный, зелёный и синий. Для радуги выбери белый свет.</p>' : ""}
                 ${source.mode === "monochromatic" ? '<p class="inspector__note">Угол источника задаёт направление до элемента. Угол преломления после стекла показан ниже.</p>' : ""}
             </section>
 
@@ -335,9 +339,13 @@ export default class EditorInspector {
                     </label>
                     <input id="laser-divergence" type="range" min="0" max="2" step="0.05" value="${source.divergence}" data-property="divergence" aria-label="Расходимость луча">
                     <div class="inspector__range-scale"><span>0°</span><span>2°</span></div>
+                    <small>Угол между крайними лучами пучка.</small>
                 </div>
-                <label class="inspector__field inspector__field--stacked"><span data-ray-count>Число лучей в пучке: ${source.rayCount || 9}</span><input type="range" min="3" max="31" step="2" value="${source.rayCount || 9}" data-property="rayCount" aria-label="Число лучей в пучке"></label>
-                <label class="inspector__field inspector__field--stacked"><span data-beam-width>Ширина параллельного пучка: ${source.beamWidth || 0}</span><input type="range" min="0" max="600" step="10" value="${source.beamWidth || 0}" data-property="beamWidth" aria-label="Ширина параллельного пучка"></label>
+                <label class="inspector__field inspector__field--stacked"><span data-beam-width>Ширина пучка: ${source.beamWidth || 0}</span><input type="range" min="0" max="600" step="10" value="${source.beamWidth || 0}" data-property="beamWidth" aria-label="Ширина параллельного пучка"><small>Распределяет лучи поперёк направления света.</small></label>
+                <details class="inspector__advanced"><summary>Дополнительные настройки</summary>
+                    <label class="inspector__field inspector__field--stacked"><span data-ray-count>Лучей в пучке: ${source.rayCount || 9}</span><input type="range" min="3" max="31" step="2" value="${source.rayCount || 9}" data-property="rayCount" aria-label="Количество лучей в пучке"><small>Больше лучей — плавнее рисунок, но расчёт медленнее.</small></label>
+                    <label class="inspector__check"><input type="checkbox" data-property="showGlassReflections" ${source.showGlassReflections ? "checked" : ""}><span><strong>Показывать отражения от стекла</strong><small>Включи, чтобы увидеть слабые лучи, отражённые от линз и стекла. Полное внутреннее отражение показывается всегда.</small></span></label>
+                </details>
             </section>
 
             <section class="inspector__section">
@@ -572,6 +580,7 @@ export default class EditorInspector {
         const property = input.dataset.property;
 
         if (!property || !this.object) return;
+        const object = this.object;
 
         // Обработка режима источника
         if (
@@ -583,14 +592,17 @@ export default class EditorInspector {
             return;
         }
 
+        if (object instanceof LaserSource && property === "showGlassReflections") {
+            object.showGlassReflections = input.checked;
+            this.refresh();
+            return;
+        }
+
         const isColor = input.type === "color";
         const value = isColor ? input.value : Number(input.value);
 
         if (!isColor && !Number.isFinite(value)) return;
 
-        const object = this.object;
-
-        
         if (object instanceof LaserSource) {
             if (property === "mode") {
                 object.setMode(input.value);

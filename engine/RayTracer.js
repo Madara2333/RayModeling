@@ -1,4 +1,4 @@
-import Ray from "../geometry/Ray.js?v=7fba26e9";
+import Ray from "../geometry/Ray.js?v=audit1126";
 import Vector2D from "../geometry/Vector2D.js";
 import Intersection from "../geometry/Intersection.js";
 
@@ -35,7 +35,7 @@ export default class RayTracer {
         return { n1, n2 };
     }
 
-    traceRay(path, ray, mediums = []) {
+    traceRay(path, ray, mediums = [], showGlassReflections = false) {
         path.add(ray);
 
         this.findClosestIntersection(ray);
@@ -60,7 +60,7 @@ export default class RayTracer {
             );
             reflected.branchType = "reflection";
             reflected.parentRayId = ray.id;
-            this.traceRay(path, reflected, mediums);
+            this.traceRay(path, reflected, mediums, showGlassReflections);
             return;
         }
 
@@ -76,7 +76,7 @@ export default class RayTracer {
             );
             transmitted.branchType = "transmission";
             transmitted.parentRayId = ray.id;
-            this.traceRay(path, transmitted, mediums);
+            this.traceRay(path, transmitted, mediums, showGlassReflections);
             return;
         }
 
@@ -113,14 +113,18 @@ export default class RayTracer {
             ray, normal, n1, n2, refractedRay
         );
 
-        this.traceRay(path, reflectedRay, oldMediums);
+        reflectedRay.parentRayId = ray.id;
+        reflectedRay.branchType = "reflection";
+        if (showGlassReflections || refractedRay === null) {
+            this.traceRay(path, reflectedRay, oldMediums, showGlassReflections);
+        }
 
         if (refractedRay !== null) {
             refractedRay.power =
                 ray.power * ray.intersection.transmittance; 
-            reflectedRay.parentRayId = ray.id;
-            reflectedRay.branchType = "reflection";
-            this.traceRay(path, refractedRay, [...mediums]);
+            refractedRay.parentRayId = ray.id;
+            refractedRay.branchType = "transmission";
+            this.traceRay(path, refractedRay, [...mediums], showGlassReflections);
         }
     }
 
@@ -167,7 +171,7 @@ export default class RayTracer {
                     spectralComponent.intensity
                 );
 
-                this.traceRay(source.rayPath, ray, []);
+                this.traceRay(source.rayPath, ray, [], source.showGlassReflections);
             }
         }
     }

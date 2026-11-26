@@ -45,7 +45,8 @@ export function saveScene(app, name = "Моя оптическая схема") 
         spectrumSamples: source.spectrumSamples,
         divergence: source.divergence,
         rayCount: source.rayCount || 9,
-        beamWidth: source.beamWidth || 0
+        beamWidth: source.beamWidth || 0,
+        showGlassReflections: source.showGlassReflections || false
     }));
 
     return {
@@ -101,6 +102,7 @@ export function loadScene(app, editor, data) {
         source.divergence = Math.max(0, Math.min(2, Number(item.divergence) || 0));
         source.rayCount = Math.max(3, Math.min(31, Number(item.rayCount) || 9));
         source.beamWidth = Math.max(0, Math.min(600, Number(item.beamWidth) || 0));
+        source.showGlassReflections = Boolean(item.showGlassReflections);
         return source;
     });
 

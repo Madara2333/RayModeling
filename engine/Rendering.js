@@ -97,6 +97,7 @@ export default class Rendering {
             source.position.x, source.position.y,
             source.direction.x, source.direction.y,
             source.power, source.divergence, source.rayCount || 9, source.beamWidth || 0,
+            source.showGlassReflections || false,
             ...(source.spectrum || []).flatMap((component) => [component.wavelength, component.intensity])
         ]);
 

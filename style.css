@@ -310,6 +310,14 @@ button, input, select { font: inherit; }
 }
 .inspector__wavelength-presets button:hover { border-color: #4d8a84; color: #b7e4de; }
 .inspector__note { margin: 0; color: #8799a8; font-size: 11px; line-height: 1.5; }
+.inspector__field > small, .inspector__check small { color: #80909d; font-size: 10px; line-height: 1.45; }
+.inspector__advanced { display: flex; flex-direction: column; gap: 11px; padding: 10px 11px; border: 1px solid #293a47; border-radius: 7px; background: #131d26; }
+.inspector__advanced summary { color: #aebbc7; font-size: 11px; cursor: pointer; user-select: none; }
+.inspector__advanced[open] summary { margin-bottom: 2px; color: #d4e2e8; }
+.inspector__check { display: flex; align-items: flex-start; gap: 9px; color: #b8c5ce; font-size: 11px; cursor: pointer; }
+.inspector__check input { width: 15px; height: 15px; flex: 0 0 auto; margin: 1px 0 0; accent-color: var(--accent); }
+.inspector__check > span { display: flex; flex-direction: column; gap: 5px; }
+.inspector__check strong { color: #c8d5dc; font-weight: 600; }
 .inspector__section [hidden] { display: none !important; }
 .inspector__field:has(input[type="range"]) { grid-template-columns: minmax(0, 1fr) auto; }
 .inspector__field:has(input[type="range"]) > label { grid-column: 1 / -1; }

@@ -1,14 +1,14 @@
 import Shape from "./geometry/Shape.js";
 import Vector2D from "./geometry/Vector2D.js";
 import Material from "./optics/Material.js";
-import App from "./engine/App.js?v=7fba26e9";
+import App from "./engine/App.js?v=audit1126";
 import LaserSource from "./optics/LaserSource.js";
 import Lens from "./optics/Lens.js";
 import Mirror from "./optics/Mirror.js";
 import OpticalFilter from "./optics/OpticalFilter.js";
 import Sensor from "./optics/Sensor.js";
-import EditorController from "./engine/EditorController.js?v=7fba26e9";
-import { saveScene, loadScene as restoreScene } from "./engine/SceneSerializer.js?v=7fba26e9";
+import EditorController from "./engine/EditorController.js?v=audit1126";
+import { saveScene, loadScene as restoreScene } from "./engine/SceneSerializer.js?v=audit1126";
 
 
 const canvas = document.querySelector("#work-canvas");
@@ -155,6 +155,16 @@ function showLesson(preset, key) {
     `;
 }
 
+function showLoadedScene(name) {
+    lessonContent.innerHTML = `
+        <div class="lesson-card__number">СВОЯ СХЕМА</div>
+        <h3>Загруженная схема</h3>
+        <p>Схема открыта. Выбирай элементы на поле, чтобы менять их параметры. Перетащи элемент мышью, чтобы переместить его.</p>
+        <div class="lesson-card__section"><strong>Подсказка</strong><span>Чтобы удалить выбранный элемент, нажми Delete или Backspace. Сохраняй изменения кнопкой «Сохранить».</span></div>
+    `;
+    lessonContent.querySelector("h3").textContent = name || "Загруженная схема";
+}
+
 function loadScene(name) {
     const preset = sceneFactories[name];
     if (!preset) return;
@@ -207,6 +217,7 @@ sceneFileInput.addEventListener("change", async () => {
         const customOption = new Option(name, "loaded-scene", true, true);
         sceneSelect.add(customOption);
         sceneStatus.textContent = name;
+        showLoadedScene(name);
     } catch (error) {
         window.alert(error.message || "Не удалось открыть схему");
     } finally {

@@ -20,6 +20,8 @@ export default class LaserSource {
         this.divergence = 0;
         // Ширина параллельного пучка; ноль означает точечный источник.
         this.beamWidth = 0;
+        // Weak Fresnel reflections are hidden in the basic diagram.
+        this.showGlassReflections = false;
 
         this.spectrumSamples = 24;
         this.spectrum = this.createWhiteSpectrum(this.spectrumSamples);

@@ -87,11 +87,15 @@ export default class Ray {
         }
 
         const [r, g, b] = Ray.wavelengthToRGB(this.wavelength);
-        // Keep weak spectral components visible without changing their
-        // simulated power, which is still used by sensors and measurements.
+        // Visual brightness is separate from simulated power. Keep weak white
+        // spectrum components visible, while leaving glass reflections faint.
+        const reflected = this.branchType === "reflection";
         const alpha = Math.min(
-            0.78,
-            Math.max(0.18, Math.sqrt(Math.max(0, this.power)) * 1.1)
+            reflected ? 0.35 : 0.82,
+            Math.max(
+                reflected ? 0.012 : 0.035,
+                Math.sqrt(Math.max(0, this.power)) * (reflected ? 0.2 : 0.8)
+            )
         );
 
         ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;

@@ -4,8 +4,8 @@ import LaserSource from "../../optics/LaserSource.js";
 
 export default class EditorSelection {
     constructor(scene, editor) {
-        this.scene = scene; // TODO
-        this.editor = editor; 
+        this.scene = scene;
+        this.editor = editor;
     }
 
     findObjectAtPosition(position) {
@@ -55,13 +55,6 @@ export default class EditorSelection {
     _sourceContainsPoint(source, point) {
         const dx = point.x - source.position.x;
         const dy = point.y - source.position.y;
-
-        // // TODO
-        // if (this.editor.selectedObject === source) {
-        //     return (
-        //         dx * dx + dy * dy <= 50
-        //     );
-        // }
 
         const cos = source.direction.x;
         const sin = source.direction.y;

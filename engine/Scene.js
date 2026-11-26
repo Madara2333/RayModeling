@@ -1,6 +1,3 @@
-import LightSource from "../optics/LightSource.js";
-import Sensor from "../optics/Sensor.js";
-
 export default class Scene {
     constructor() {
         this.objects = [];

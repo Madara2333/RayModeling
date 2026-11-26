@@ -12,7 +12,7 @@ export default class EditorCreation {
     constructor(scene, camera) {
         this.scene = scene;
         this.camera = camera;
-        this.currentMatrial = new Material();
+        this.currentMaterial = new Material();
         this.isCreatingShape = false;
         this.creationPoints = [];
         this.minPointDistance = 3;
@@ -93,7 +93,7 @@ export default class EditorCreation {
             return null;
         }
 
-        const material = this.currentMatrial;
+        const material = this.currentMaterial;
         const shape = new Shape(material);
 
         for (const point of this.creationPoints) {
