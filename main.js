@@ -1,14 +1,14 @@
 import Shape from "./geometry/Shape.js";
 import Vector2D from "./geometry/Vector2D.js";
 import Material from "./optics/Material.js";
-import App from "./engine/App.js?v=68a0d6aa";
+import App from "./engine/App.js?v=83d4975f";
 import LaserSource from "./optics/LaserSource.js";
 import Lens from "./optics/Lens.js";
 import Mirror from "./optics/Mirror.js";
 import OpticalFilter from "./optics/OpticalFilter.js";
 import Sensor from "./optics/Sensor.js";
-import EditorController from "./engine/EditorController.js?v=68a0d6aa";
-import { saveScene, loadScene as restoreScene } from "./engine/SceneSerializer.js?v=68a0d6aa";
+import EditorController from "./engine/EditorController.js?v=83d4975f";
+import { saveScene, loadScene as restoreScene } from "./engine/SceneSerializer.js?v=83d4975f";
 
 
 const canvas = document.querySelector("#work-canvas");
@@ -74,9 +74,9 @@ function createPrism() {
 function createGlassBlock() {
     const block = new Shape(glass());
     block.addPoint(500, 300);
-    block.addPoint(760, 250);
-    block.addPoint(820, 650);
-    block.addPoint(560, 700);
+    block.addPoint(800, 550);
+    block.addPoint(1000, 550);
+    block.addPoint(700, 300);
     return block;
 }
 

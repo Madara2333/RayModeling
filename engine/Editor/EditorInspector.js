@@ -205,7 +205,11 @@ export default class EditorInspector {
         const interactions = (source.rayPath?.rays || [])
             .filter(ray => ray.interaction && ray.intersection.object?.material);
         if (!interactions.length) return null;
-        const transmitted = interactions.filter(ray => ray.interaction.refractionAngle !== null);
+        // Show the angle inside glass at the entering surface, where wavelength
+        // changes the measured direction. The exit surface bends the ray back.
+        const enteringGlass = interactions.filter(ray => ray.interaction.n2 > ray.interaction.n1);
+        const measured = enteringGlass.length ? enteringGlass : interactions;
+        const transmitted = measured.filter(ray => ray.interaction.refractionAngle !== null);
         if (!transmitted.length) return { angle: null, rays: interactions.length, totalInternal: true };
         const angle = transmitted.reduce((sum, ray) => sum + ray.interaction.refractionAngle, 0) / transmitted.length;
         return { angle, rays: transmitted.length, totalInternal: false };
