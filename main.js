@@ -1,14 +1,14 @@
 import Shape from "./geometry/Shape.js";
 import Vector2D from "./geometry/Vector2D.js";
 import Material from "./optics/Material.js";
-import App from "./engine/App.js?v=aefc2a3a";
+import App from "./engine/App.js?v=7fba26e9";
 import LaserSource from "./optics/LaserSource.js";
 import Lens from "./optics/Lens.js";
 import Mirror from "./optics/Mirror.js";
 import OpticalFilter from "./optics/OpticalFilter.js";
 import Sensor from "./optics/Sensor.js";
-import EditorController from "./engine/EditorController.js?v=aefc2a3a";
-import { saveScene, loadScene as restoreScene } from "./engine/SceneSerializer.js?v=aefc2a3a";
+import EditorController from "./engine/EditorController.js?v=7fba26e9";
+import { saveScene, loadScene as restoreScene } from "./engine/SceneSerializer.js?v=7fba26e9";
 
 
 const canvas = document.querySelector("#work-canvas");

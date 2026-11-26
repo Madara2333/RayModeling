@@ -1,4 +1,4 @@
-import Ray from "../geometry/Ray.js?v=aefc2a3a";
+import Ray from "../geometry/Ray.js?v=7fba26e9";
 import Vector2D from "../geometry/Vector2D.js";
 import Intersection from "../geometry/Intersection.js";
 

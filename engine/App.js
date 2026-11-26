@@ -1,6 +1,6 @@
 import Scene from "./Scene.js";
-import RayTracer from "./RayTracer.js?v=aefc2a3a";
-import Rendering from "./Rendering.js?v=aefc2a3a";
+import RayTracer from "./RayTracer.js?v=7fba26e9";
+import Rendering from "./Rendering.js?v=7fba26e9";
 import Camera from "./Camera.js";
 
 export default class App {
