@@ -47,6 +47,13 @@ function createSource(mode = "monochromatic", wavelength = 550) {
     return source;
 }
 
+function createParallelSource(mode = "monochromatic", wavelength = 550, width = 240) {
+    const source = createSource(mode, wavelength);
+    source.beamWidth = width;
+    source.rayCount = 17;
+    return source;
+}
+
 function createLens(x, focusLength = 420, height = 500) {
     return new Lens({
         edgePosition1: new Vector2D(x, 480 + height / 2),
@@ -58,9 +65,9 @@ function createLens(x, focusLength = 420, height = 500) {
 
 function createPrism() {
     const prism = new Shape(glass());
-    prism.addPoint(600, 250);
-    prism.addPoint(850, 480);
-    prism.addPoint(600, 710);
+    prism.addPoint(700, 220);
+    prism.addPoint(500, 700);
+    prism.addPoint(900, 700);
     return prism;
 }
 
@@ -73,61 +80,60 @@ function createGlassBlock() {
     return block;
 }
 
-function createDivergingSource(wavelength = 550, divergence = 1.2) {
-    const source = createSource("monochromatic", wavelength);
-    source.divergence = divergence;
-    source.rayCount = 13;
-    return source;
-}
-
 const sceneFactories = {
     focus: {
         name: "Фокусировка линзой",
-        intro: "Линза меняет направление лучей. Собирающая линза направляет их к одной точке — фокусу.",
-        observe: "Лучики после линзы сходятся рядом друг с другом.",
-        try: "В режиме редактора выбери линзу и измени её форму или фокусное расстояние.",
+        intro: "На линзу падает параллельный пучок. Собирающая линза сводит лучи в фокус — точку на главной оптической оси.",
+        observe: "До линзы лучи идут параллельно, после неё сходятся к одной точке.",
+        why: "Чем сильнее искривлены поверхности линзы, тем короче её фокусное расстояние.",
+        try: "Переключись в редактор и измени фокусное расстояние линзы. Точка сбора лучей переместится.",
         build() {
-            app.scene.addSource(createDivergingSource(550, 1.4));
+            app.scene.addSource(createParallelSource("monochromatic", 550, 300));
             app.scene.addObject(createLens(660, 420, 540));
         }
     },
     refraction: {
         name: "Преломление в стекле",
-        intro: "При переходе из воздуха в стекло свет меняет скорость и направление. Это называется преломлением.",
-        observe: "Посмотри, как луч меняет направление на входе в стекло и при выходе из него.",
-        try: "Измени длину волны источника и сравни, насколько отклоняется луч.",
+        intro: "На границе двух материалов свет меняет скорость, поэтому меняет и направление. Это явление называется преломлением.",
+        observe: "Сравни направление параллельных лучей до стекла и после выхода из него.",
+        why: "В редакторе у источника отдельно показаны направление падающего луча и измеренный угол преломления.",
+        try: "В редакторе выбери синий (450 нм), затем красный (650 нм) свет и сравни угол преломления.",
         build() {
-            app.scene.addSource(createSource("monochromatic", 532));
+            app.scene.addSource(createParallelSource("monochromatic", 450, 120));
             app.scene.addObject(createGlassBlock());
         }
     },
     reflection: {
         name: "Отражение от зеркала",
-        intro: "Зеркало отражает свет. Угол, под которым луч падает на поверхность, равен углу отражения.",
-        observe: "Падающий пучок меняет направление после встречи с наклонным зеркалом.",
-        try: "В редакторе поверни зеркало и посмотри, куда направится отражённый свет.",
+        intro: "Свет отражается от зеркала, сохраняя угол относительно перпендикуляра к поверхности.",
+        observe: "Параллельный пучок меняет направление на зеркале.",
+        why: "Закон отражения: угол падения равен углу отражения. Оба угла отсчитываются от нормали — перпендикуляра к зеркалу.",
+        try: "Поверни зеркало в редакторе и проследи, как изменится направление отражённого пучка.",
         build() {
-            app.scene.addSource(createDivergingSource(532, 1.2));
+            app.scene.addSource(createParallelSource("monochromatic", 532, 180));
             app.scene.addObject(new Mirror(new Vector2D(650, 480), 45, 420));
         }
     },
     spectrum: {
-        name: "Белый свет и призма",
-        intro: "Белый свет состоит из волн разной длины. В стекле они преломляются немного по-разному.",
-        observe: "После призмы белый луч распадается на цветные лучи — спектр.",
-        try: "Выбери сцену с фильтром, чтобы пропускать только часть спектра.",
+        name: "Дисперсия света",
+        intro: "Белый свет — это смесь волн разной длины. В стекле каждая длина волны преломляется на свой угол.",
+        observe: "После призмы лучи расходятся веером: от красного до фиолетового.",
+        why: "Это явление называется дисперсией. Красный свет отклоняется слабее, фиолетовый — сильнее.",
+        try: "Выбери монохроматический свет и сравни отдельно красный и синий лучи.",
         build() {
-            app.scene.addSource(createSource("white"));
+            app.scene.addSource(createParallelSource("white", 550, 100));
             app.scene.addObject(createPrism());
         }
     },
     filter: {
         name: "Как работает фильтр",
-        intro: "Цветной фильтр пропускает свет только в заданном диапазоне длин волн, а остальные цвета поглощает.",
-        observe: "Белый спектр сужается до диапазона, который пропускает фильтр.",
-        try: "В редакторе выбери фильтр и измени границы пропускания.",
+        intro: "Спектральный фильтр пропускает только выбранные длины волн, а остальные поглощает.",
+        observe: "За фильтром остаётся только часть белого спектра. Датчик показывает, сколько лучей прошло.",
+        why: "Датчик — это экран-приёмник: он останавливает лучи и измеряет их количество и суммарную мощность.",
+        try: "В редакторе выбери фильтр и измени границы диапазона. Затем сравни показания датчика.",
+        sensorNote: "Датчик стоит за фильтром и служит экраном: он считает прошедшие лучи и их суммарную мощность.",
         build() {
-            const source = createSource("white");
+            const source = createParallelSource("white", 550, 180);
             source.position.x = 130;
             app.scene.addSource(source);
             app.scene.addObject(new OpticalFilter(new Vector2D(560, 480), 90, 520, 500, 600));
@@ -136,12 +142,15 @@ const sceneFactories = {
     }
 };
 
-function showLesson(preset) {
+function showLesson(preset, key) {
     lessonContent.innerHTML = `
         <div class="lesson-card__number">ОПЫТ</div>
         <h3>${preset.name}</h3>
         <p>${preset.intro}</p>
         <div class="lesson-card__section"><strong>Наблюдай</strong><span>${preset.observe}</span></div>
+        ${preset.why ? `<div class="lesson-card__section"><strong>Почему?</strong><span>${preset.why}</span></div>` : ""}
+        ${key === "refraction" ? `<div class="lesson-card__section lesson-card__section--try"><strong>Сравни цвета</strong><div class="lesson-card__buttons"><button type="button" data-lesson-wavelength="450">Синий · 450 нм</button><button type="button" data-lesson-wavelength="650">Красный · 650 нм</button></div><output class="lesson-card__result" id="lesson-refraction-result">Угол преломления: рассчитывается…</output></div>` : ""}
+        ${preset.sensorNote ? `<div class="lesson-card__section lesson-card__section--sensor"><strong>Зачем датчик?</strong><span>${preset.sensorNote}</span><output id="lesson-sensor-result">Датчик считает лучи после фильтра…</output></div>` : ""}
         <div class="lesson-card__section lesson-card__section--try"><strong>Попробуй</strong><span>${preset.try}</span></div>
     `;
 }
@@ -159,7 +168,7 @@ function loadScene(name) {
     preset.build();
     app.rendering.lastSceneSignature = null;
     sceneStatus.textContent = preset.name;
-    showLesson(preset);
+    showLesson(preset, name);
 }
 
 sceneSelect.addEventListener("change", () => loadScene(sceneSelect.value));
@@ -247,6 +256,36 @@ document.querySelector("#fit-scene").addEventListener("click", () => {
     updateZoomLabel();
 });
 
+function updateLessonReadout() {
+    const output = document.querySelector("#lesson-sensor-result");
+    const sensor = app.scene.objects.find(object => object.tag === "sensor");
+    if (output && sensor) {
+        const values = sensor.getMeasurements();
+        const text = `На датчик попало ${values.rays} лучей. Суммарная мощность: ${values.power.toFixed(3)}.`;
+        if (output.textContent !== text) output.textContent = text;
+    }
+
+    const refraction = document.querySelector("#lesson-refraction-result");
+    const source = app.scene.sources[0];
+    if (refraction && source) {
+        const measurement = editor.inspector.getSourceRefractionMeasurement(source);
+        refraction.textContent = measurement
+            ? `λ = ${Math.round(source.wavelength)} нм · угол преломления: ${measurement.totalInternal ? "полное отражение" : `${measurement.angle.toFixed(2)}°`}`
+            : `λ = ${Math.round(source.wavelength)} нм · поставь стекло на пути луча`;
+    }
+}
+
+lessonContent.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-lesson-wavelength]");
+    if (!button) return;
+    const source = app.scene.sources[0];
+    if (!source) return;
+    source.setMode("monochromatic");
+    source.setWavelength(Number(button.dataset.lessonWavelength));
+    updateLessonReadout();
+});
+
+
 
 function mainLoop(timestamp) {
 	const dt = Math.min((timestamp - previousTime) / 1000, 0.1);
@@ -260,6 +299,7 @@ function mainLoop(timestamp) {
 	}
 
 	app.draw();
+	updateLessonReadout();
 	updateZoomLabel();
 	requestAnimationFrame(mainLoop);
 }

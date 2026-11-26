@@ -85,6 +85,16 @@ export default class EditorInspector {
             if (count) count.textContent = String(measurement?.rays || 0);
         }
 
+        if (this.object instanceof LaserSource) {
+            const measurement = this.getSourceRefractionMeasurement(this.object);
+            const angle = this.container.querySelector("[data-source-refraction]");
+            const count = this.container.querySelector("[data-source-refraction-count]");
+            if (angle) angle.textContent = measurement ? (measurement.totalInternal ? "полное внутреннее отражение" : `${measurement.angle.toFixed(2)}°`) : "на пути нет стекла";
+            if (count) count.textContent = measurement ? `${measurement.rays} пересечений` : "0 пересечений";
+            const beamWidth = this.container.querySelector("[data-beam-width]");
+            if (beamWidth) beamWidth.textContent = `Ширина параллельного пучка: ${this.object.beamWidth || 0}`;
+        }
+
         const colorPreview = this.container.querySelector(
             ".inspector__color-preview"
         );
@@ -114,6 +124,7 @@ export default class EditorInspector {
         if (property === "position.y") return object.position.y;
 
         if (property === "power") return object.power;
+        if (property === "beamWidth") return object.beamWidth;
 
         if (property === "angle" && object.direction) {
             return this.getDirectionAngle(object);
@@ -190,6 +201,16 @@ export default class EditorInspector {
         return (this.scene?.sources || []).flatMap(source => source.rayPath?.rays || []);
     }
 
+    getSourceRefractionMeasurement(source) {
+        const interactions = (source.rayPath?.rays || [])
+            .filter(ray => ray.interaction && ray.intersection.object?.material);
+        if (!interactions.length) return null;
+        const transmitted = interactions.filter(ray => ray.interaction.refractionAngle !== null);
+        if (!transmitted.length) return { angle: null, rays: interactions.length, totalInternal: true };
+        const angle = transmitted.reduce((sum, ray) => sum + ray.interaction.refractionAngle, 0) / transmitted.length;
+        return { angle, rays: transmitted.length, totalInternal: false };
+    }
+
     render() {
         if (!this.container) return;
 
@@ -237,7 +258,7 @@ export default class EditorInspector {
         const isSensor = object instanceof Sensor;
         const title = object instanceof Mirror ? "Зеркало" : isFilter ? "Спектральный фильтр" : "Датчик";
         const details = isSensor
-            ? `<div class="inspector__property"><span>Измерения</span><span data-sensor-measurements>0 лучей · суммарная мощность 0.000</span></div>`
+            ? `<p class="inspector__note">Датчик — экран-приёмник: останавливает лучи в месте установки и считает их количество и суммарную мощность.</p><div class="inspector__property"><span>Измерения</span><span data-sensor-measurements>0 лучей · суммарная мощность 0.000</span></div>`
             : isFilter
                 ? `<h3 class="inspector__title">Диапазон пропускания</h3>
                     <label class="inspector__field"><span>От, нм</span><input type="number" min="380" max="780" data-property="minWavelength" value="${object.minWavelength}"></label>
@@ -270,9 +291,9 @@ export default class EditorInspector {
                 <label class="inspector__field inspector__field--stacked">
                     <span>Режим</span>
                     <select data-property="mode" aria-label="Режим излучения">
-                        <option value="white" ${source.mode === "white" ? "selected" : ""}>Белый свет</option>
-                        <option value="monochromatic" ${source.mode === "monochromatic" ? "selected" : ""}>Монохроматический</option>
-                        <option value="rgb" ${source.mode === "rgb" ? "selected" : ""}>Красный, зелёный и синий</option>
+                        <option value="white" ${source.mode === "white" ? "selected" : ""}>Белый свет — весь спектр</option>
+                        <option value="monochromatic" ${source.mode === "monochromatic" ? "selected" : ""}>Один цвет — одна длина волны</option>
+                        <option value="rgb" ${source.mode === "rgb" ? "selected" : ""}>Три цвета RGB — для сравнения</option>
                     </select>
                 </label>
 
@@ -294,12 +315,16 @@ export default class EditorInspector {
                     <div class="inspector__range-scale"><span>380 нм</span><span>780 нм</span></div>
                 </div>
                 ${source.mode === "white" ? '<p class="inspector__note">Белый свет состоит из набора длин волн 380–780 нм. Призма показывает их разложение.</p>' : ""}
+                ${source.mode === "rgb" ? '<p class="inspector__note">Рисует три отдельных луча — красный, зелёный и синий. Это режим сравнения цветов, а не сплошной спектр белого света.</p>' : ""}
+                ${source.mode === "monochromatic" ? '<p class="inspector__note">Угол источника задаёт направление до элемента. Угол преломления после стекла показан ниже.</p>' : ""}
             </section>
 
             <section class="inspector__section">
                 <h3 class="inspector__title">Параметры луча</h3>
                 <label class="inspector__field"><span>Мощность</span><input type="number" min="0" max="1" step="0.01" value="${source.power}" data-property="power" aria-label="Мощность"></label>
-                <label class="inspector__field"><span>Направление</span><input type="number" step="1" value="${this.getDirectionAngle(source).toFixed(1)}" data-property="angle" aria-label="Угол направления в градусах"></label>
+                <label class="inspector__field"><span>Угол источника</span><input type="number" step="1" value="${this.getDirectionAngle(source).toFixed(1)}" data-property="angle" aria-label="Угол направления источника в градусах"></label>
+                <div class="inspector__property"><span>Угол преломления</span><span data-source-refraction>на пути нет стекла</span></div>
+                <div class="inspector__property"><span>Учтено</span><span data-source-refraction-count>0 пересечений</span></div>
                 <div class="inspector__field inspector__field--stacked">
                     <label class="inspector__value-label" for="laser-divergence">
                         Расходимость <output data-value="divergence">${source.divergence.toFixed(2)}°</output>
@@ -308,6 +333,7 @@ export default class EditorInspector {
                     <div class="inspector__range-scale"><span>0°</span><span>2°</span></div>
                 </div>
                 <label class="inspector__field inspector__field--stacked"><span data-ray-count>Число лучей в пучке: ${source.rayCount || 9}</span><input type="range" min="3" max="31" step="2" value="${source.rayCount || 9}" data-property="rayCount" aria-label="Число лучей в пучке"></label>
+                <label class="inspector__field inspector__field--stacked"><span data-beam-width>Ширина параллельного пучка: ${source.beamWidth || 0}</span><input type="range" min="0" max="600" step="10" value="${source.beamWidth || 0}" data-property="beamWidth" aria-label="Ширина параллельного пучка"></label>
             </section>
 
             <section class="inspector__section">
@@ -593,6 +619,8 @@ export default class EditorInspector {
                 object.divergence = Math.max(0, Math.min(2, value));
             } else if (property === "rayCount") {
                 object.rayCount = Math.max(3, Math.min(31, Math.round(value)));
+            } else if (property === "beamWidth") {
+                object.beamWidth = Math.max(0, Math.min(600, value));
             }
 
             this.refresh();

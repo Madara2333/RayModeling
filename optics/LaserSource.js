@@ -18,6 +18,8 @@ export default class LaserSource {
 
         // Угол расходимости (пока только параметр)
         this.divergence = 0;
+        // Ширина параллельного пучка; ноль означает точечный источник.
+        this.beamWidth = 0;
 
         this.spectrumSamples = 24;
         this.spectrum = this.createWhiteSpectrum(this.spectrumSamples);

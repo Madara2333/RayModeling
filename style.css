@@ -347,6 +347,13 @@ button, input, select { font: inherit; }
 .lesson-card__section span { color: #bac7d0; font-size: 12px; line-height: 1.55; }
 .lesson-card__section--try { border-color: #3b3c36; background: #211f1a; }
 .lesson-card__section--try strong { color: #e4c47a; }
+.lesson-card__buttons { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 4px; }
+.lesson-card__buttons button { border: 1px solid #5c5748; border-radius: 7px; padding: 8px 10px; color: #f1e6c8; background: #302b20; font: inherit; font-size: 11px; cursor: pointer; }
+.lesson-card__buttons button:hover, .lesson-card__buttons button:focus-visible { border-color: #e4c47a; background: #3b3426; outline: none; }
+.lesson-card__result { color: #d9d3c3; font-size: 11px; line-height: 1.45; }
+.lesson-card__section--sensor { border-color: #3d514c; background: #172521; }
+.lesson-card__section--sensor strong { color: #8bd4ba; }
+.lesson-card__section--sensor output { color: #d7efe4; font-size: 12px; font-weight: 700; line-height: 1.5; }
 
 @media (max-width: 900px) {
     .app.learning-mode .editor { grid-template-columns: minmax(0, 1fr) 280px; }

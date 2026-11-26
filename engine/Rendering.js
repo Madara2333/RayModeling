@@ -96,7 +96,7 @@ export default class Rendering {
         const sources = scene.sources.map((source) => [
             source.position.x, source.position.y,
             source.direction.x, source.direction.y,
-            source.power, source.divergence, source.rayCount || 9,
+            source.power, source.divergence, source.rayCount || 9, source.beamWidth || 0,
             ...(source.spectrum || []).flatMap((component) => [component.wavelength, component.intensity])
         ]);
 

@@ -133,17 +133,10 @@ export default class RayTracer {
             Math.min(2, source.divergence)
         );
         
-        const rayCount = divergence === 0 ? 1 : Math.max(3, Math.min(31, source.rayCount || 9));
-
-        const offsets = Array.from(
-            { length: rayCount },
-            (_, i) => {
-                if (rayCount === 1) return 0;
-
-                return -divergence / 2 +
-                    (divergence * i) / (rayCount - 1);
-            }
-        );
+        const beamWidth = Math.max(0, Math.min(600, source.beamWidth || 0));
+        const rayCount = divergence === 0 && beamWidth === 0
+            ? 1
+            : Math.max(3, Math.min(31, source.rayCount || 9));
 
         const baseAngle = Math.atan2(
             source.direction.y,
@@ -151,7 +144,9 @@ export default class RayTracer {
         );
 
         for (const spectralComponent of source.spectrum) {
-            for (const offset of offsets) {
+            for (let i = 0; i < rayCount; i++) {
+                const offset = rayCount === 1 ? 0 :
+                    -divergence / 2 + divergence * i / (rayCount - 1);
                 const angle = baseAngle + offset * Math.PI / 180;
 
                 const direction = {
@@ -159,10 +154,14 @@ export default class RayTracer {
                     y: Math.sin(angle)
                 };
 
+                const lateralOffset = rayCount === 1 ? 0 :
+                    -beamWidth / 2 + beamWidth * i / (rayCount - 1);
+                const perpendicular = { x: -Math.sin(baseAngle), y: Math.cos(baseAngle) };
                 const ray = new Ray(
-                    { x: source.position.x, y: source.position.y },
+                    { x: source.position.x + perpendicular.x * lateralOffset,
+                        y: source.position.y + perpendicular.y * lateralOffset },
                     direction,
-                    source.power * spectralComponent.intensity / offsets.length,
+                    source.power * spectralComponent.intensity / rayCount,
                     0,
                     spectralComponent.wavelength,
                     spectralComponent.intensity

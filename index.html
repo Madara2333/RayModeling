@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#111821">
-    <title>RayModeling — оптический редактор</title>
+    <title>RayModeling — наглядная оптика</title>
     <link rel="stylesheet" href="./style.css">
 </head>
 
@@ -24,11 +24,11 @@
                 <button class="top-bar__btn editor-only" type="button" id="save-scene">Сохранить</button>
                 <input type="file" id="scene-file" accept="application/json,.json" hidden>
                 <label class="top-bar__scene-label" for="scene-presets">Опыт</label>
-                <select class="top-bar__scene-select" id="scene-presets" aria-label="Выбрать готовую сцену">
+                <select class="top-bar__scene-select" id="scene-presets" aria-label="Выбрать учебный опыт">
                     <option value="focus">Фокусировка линзой</option>
                     <option value="refraction">Преломление в стекле</option>
                     <option value="reflection">Отражение от зеркала</option>
-                    <option value="spectrum">Белый свет и призма</option>
+                    <option value="spectrum">Дисперсия света</option>
                     <option value="filter">Как работает фильтр</option>
                 </select>
                 <button class="top-bar__btn top-bar__btn--accent" type="button" id="mode-toggle">Редактор</button>
@@ -74,7 +74,7 @@
                     <button type="button" id="zoom-out" aria-label="Уменьшить">−</button>
                     <span id="zoom-label">100%</span>
                     <button type="button" id="zoom-in" aria-label="Увеличить">+</button>
-                    <button type="button" id="fit-scene">Вписать</button>
+                    <button type="button" id="fit-scene">Показать всю схему</button>
                     <button type="button" id="toggle-grid" aria-pressed="true">Сетка</button>
                 </div>
                 <canvas id="work-canvas" aria-label="Ход лучей в оптической схеме"></canvas>
